@@ -7,11 +7,11 @@
 
 #include "lib/include/global.h"
 #include <math.h>
-#include <omp.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mpi.h>
 #include "lib/include/timer.h"
 #include "lib/include/util.h"
 #include "fast.h"
@@ -34,11 +34,11 @@ static struct problem standard = { 2,27,54,  8192};
 static struct problem large    = { 2,27,54, 16384};
 static struct problem huge     = { 2,27,54, 24576};
 
+int nprocs;
+int tid;
+
 /* Be verbose? */
 int verbose = 0;
-
-/* Number of threads. */
-int nthreads = 1;
 
 /* Seed number. */
 static int seed = 0;
@@ -54,7 +54,6 @@ static void usage(void){
 	printf("Brief: FAST Corner Detection Kernel\n");
 	printf("Options:\n");
 	printf("  --help             Display this information and exit\n");
-	printf("  --nthreads <value> Set number of threads\n");
 	printf("  --class <name>     Set problem class:\n");
 	printf("                       - small\n");
 	printf("                       - standard\n");
@@ -74,7 +73,6 @@ static void readargs(int argc, char **argv){
 
 	/* State values. */
 	#define READ_ARG     0 /* Read argument.         */
-	#define SET_NTHREADS 1 /* Set number of threads. */
 	#define SET_CLASS    2 /* Set problem class.     */
 
 	state = READ_ARG;
@@ -104,12 +102,6 @@ static void readargs(int argc, char **argv){
 					state = READ_ARG;
 					break;
 
-				/* Set number of threads. */
-				case SET_NTHREADS :
-					nthreads = atoi(arg);
-					state = READ_ARG;
-					break;
-
 				default:
 					usage();
 			}
@@ -120,17 +112,11 @@ static void readargs(int argc, char **argv){
 		/* Parse argument. */
 		if (!strcmp(arg, "--verbose"))
 			verbose = 1;
-		else if (!strcmp(arg, "--nthreads"))
-			state = SET_NTHREADS;
 		else if (!strcmp(arg, "--class"))
 			state = SET_CLASS;
 		else
 			usage();
 	}
-
-	/* Invalid argument(s). */
-	if (nthreads < 1)
-		usage();
 }
 
 /*
@@ -223,24 +209,38 @@ static void generate_mask(int *mask){
  * Runs benchmark.
  */
 int main(int argc, char **argv){
-	int i;              /* Loop index.            */
+	int i, bar = 0;              /* Loop index.            */
 	int *mask;       	/* Mask.                  */
 	uint64_t end;       /* End time.              */
 	uint64_t start;     /* Start time.            */
 	char *img; 			/* Image.                 */
-	int numcorners = 0;	/* Total corners detected */
+	int numcorners = 0, totalcorners = 0;	/* Total corners detected */
+
+	/* initialize MPI */
+	MPI_Init(&argc, &argv);
+
+	// Get the number of cores in the MPI cluster
+	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+	// Get the tID number of this core in the MPI cluster
+	MPI_Comm_rank(MPI_COMM_WORLD, &tid);
+	/* end mpi */
 
 	readargs(argc, argv);
 
-	timer_init();
+	if(tid == 0)
+		timer_init();
+
 	srandnum(seed);
-	omp_set_num_threads(nthreads);
 
 	/* Benchmark initialization. */
-	if (verbose)
+	if (verbose && (tid == 0))
 		printf("initializing...\n");
 
-	start = timer_get();
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	if(tid == 0)
+		start = timer_get();
 
 	img = smalloc(p->imgsize*p->imgsize*sizeof(char));
 
@@ -252,29 +252,42 @@ int main(int argc, char **argv){
 	mask = smalloc(p->maskrows*p->maskcolumns*sizeof(int));
 	generate_mask(mask);
 
-	end = timer_get();
+	MPI_Barrier(MPI_COMM_WORLD);
 
-	if (verbose)
+	if(tid == 0)
+		end = timer_get();
+
+	if (verbose && (tid == 0))
 		printf("  time spent: %f\n", timer_diff(start, end)*MICROSEC);
 
 	/* Detect corners. */
-	if (verbose)
+	if (verbose && (tid == 0))
 		printf("detecting corners...\n");
 
-	start = timer_get();
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	if(tid == 0)
+		start = timer_get();
 
 	numcorners = fast(img, p->imgsize, mask);
 
-	end = timer_get();
+	MPI_Reduce(&numcorners, &totalcorners, 1, MPI_INT, MPI_SUM, 0,
+             MPI_COMM_WORLD);
 
-	printf("timing statistics:\n");
-	printf("  total time:       %f\n", timer_diff(start, end)*MICROSEC);
+	if(tid == 0){
+		end = timer_get();
+		printf("timing statistics:\n");
+		printf("  total time:       %f\n", timer_diff(start, end)*MICROSEC);
 
-	printf("  corners detected: %d\n", numcorners);
+		printf("  corners detected: %d\n", totalcorners);
+	}
 
 	/* House keeping. */
 	free(mask);
 	free(img);
 
+	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Finalize();
 	return (0);
 }

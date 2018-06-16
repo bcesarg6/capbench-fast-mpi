@@ -21,13 +21,11 @@ int fast(char *img, int imgsize, int *mask)
 	int i,j,k,r,z,x,y;
 	char accumBrighter, accumDarker;
 	char imagePixel,centralPixel;
-	int corners[MAX_THREADS] = {0};
+	int corners[1] = {0};
 	int numcorners = 0;
 
-	#pragma omp parallel default(shared) private(imagePixel,centralPixel,i,j,r,x,y,accumBrighter,accumDarker)
 	{
-		#pragma omp for
-		for (j = 0; j < imgsize; j++){
+		for (j = (imgsize/nprocs) * (tid); j < (imgsize/nprocs) * (tid + 1); j++){
 			for (i = 0; i < imgsize; i++){
 
 				centralPixel = img[j*imgsize + i];
@@ -74,7 +72,7 @@ int fast(char *img, int imgsize, int *mask)
 					}
 
 					if(accumBrighter == 12 || accumDarker == 12){
-						corners[omp_get_thread_num()]++;
+						corners[0]++;
 						z = 16;
 					}
 not_a_corner:			z++;
@@ -83,9 +81,7 @@ not_a_corner:			z++;
 		}
 	}
 
-	for(k = 0;k < MAX_THREADS; k++){
-		numcorners += corners[k];
-	}
+	numcorners += corners[0];
 
 	return numcorners;
 }

@@ -1,17 +1,5 @@
-#
-# Copyright(C) 2014 Pedro H. Penna <pedrohenriquepenna@gmail.com>
-#
+all:
+	gcc main.c fast.c lib/src/timer.c lib/src/util.c -O3 -o fast -lm -fopenmp
 
-# Source files.
-SRC = $(wildcard *.c)
-
-# Executable file.
-EXEC = fast
-
-# Builds kernel.
-all: $(SRC)
-	$(CC) $(SRC) $(CFLAGS) -o $(BINDIR)/$(EXEC).intel $(LIBS)
-	
-# Cleans compilation files.
 clean:
-	rm -f $(BINDIR)/$(EXEC).intel
+	rm -f fast

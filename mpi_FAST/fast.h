@@ -9,11 +9,6 @@
 #define _FAST_H_
 
 /*
- * Maximum thread num.
- */
-#define MAX_THREADS (256)
-
-/*
  * Threshold value between central pixel and neighboor pixel.
  */
 #define THRESHOLD (20)
