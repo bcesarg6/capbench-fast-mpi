@@ -46,6 +46,9 @@ static int seed = 0;
 /* Problem. */
 static struct problem *p = &tiny;
 
+int mask[] = {-1, -3, 0, -3, 1, -3, 2, -2, 3, -1, 3, 0, 3, 1, 2, 2, 1, 3, 0, 3, -1, 3, -2, 2, -3, 1,
+	-3, 0, -3, -1, -2, -2, -1, -3, 0, -3, 1, -3, 2, -2, 3, -1, 3, 0, 3, 1, 2, 2, 1, 3, 0, 3, -1, 3};
+
 /*
  * Prints program usage and exits.
  */
@@ -120,97 +123,10 @@ static void readargs(int argc, char **argv){
 }
 
 /*
- * Generates mask.
- */
-static void generate_mask(int *mask){
-	mask[0*p->maskcolumns + 0] = -1;
-	mask[0*p->maskcolumns + 1] = -3;
-
-	mask[1*p->maskcolumns + 0] = 0;
-	mask[1*p->maskcolumns + 1] = -3;
-
-	mask[2*p->maskcolumns + 0] = 1;
-	mask[2*p->maskcolumns + 1] = -3;
-
-	mask[3*p->maskcolumns + 0] = 2;
-	mask[3*p->maskcolumns + 1] = -2;
-
-	mask[4*p->maskcolumns + 0] = 3;
-	mask[4*p->maskcolumns + 1] = -1;
-
-	mask[5*p->maskcolumns + 0] = 3;
-	mask[5*p->maskcolumns + 1] = 0;
-
-	mask[6*p->maskcolumns + 0] = 3;
-	mask[6*p->maskcolumns + 1] = 1;
-
-	mask[7*p->maskcolumns + 0] = 2;
-	mask[7*p->maskcolumns + 1] = 2;
-
-	mask[8*p->maskcolumns + 0] = 1;
-	mask[8*p->maskcolumns + 1] = 3;
-
-	mask[9*p->maskcolumns + 0] = 0;
-	mask[9*p->maskcolumns + 1] = 3;
-
-	mask[10*p->maskcolumns + 0] = -1;
-	mask[10*p->maskcolumns + 1] = 3;
-
-	mask[11*p->maskcolumns + 0] = -2;
-	mask[11*p->maskcolumns + 1] = 2;
-
-	mask[12*p->maskcolumns + 0] = -3;
-	mask[12*p->maskcolumns + 1] = 1;
-
-	mask[13*p->maskcolumns + 0] = -3;
-	mask[13*p->maskcolumns + 1] = 0;
-
-	mask[14*p->maskcolumns + 0] = -3;
-	mask[14*p->maskcolumns + 1] = -1;
-
-	mask[15*p->maskcolumns + 0] = -2;
-	mask[15*p->maskcolumns + 1] = -2;
-
-	mask[16*p->maskcolumns + 0] = -1;
-	mask[16*p->maskcolumns + 1] = -3;
-
-	mask[17*p->maskcolumns + 0] = 0;
-	mask[17*p->maskcolumns + 1] = -3;
-
-	mask[18*p->maskcolumns + 0] = 1;
-	mask[18*p->maskcolumns + 1] = -3;
-
-	mask[19*p->maskcolumns + 0] = 2;
-	mask[19*p->maskcolumns + 1] = -2;
-
-	mask[20*p->maskcolumns + 0] = 3;
-	mask[20*p->maskcolumns + 1] = -1;
-
-	mask[21*p->maskcolumns + 0] = 3;
-	mask[21*p->maskcolumns + 1] = 0;
-
-	mask[22*p->maskcolumns + 0] = 3;
-	mask[22*p->maskcolumns + 1] = 1;
-
-	mask[23*p->maskcolumns + 0] = 2;
-	mask[23*p->maskcolumns + 1] = 2;
-
-	mask[24*p->maskcolumns + 0] = 1;
-	mask[24*p->maskcolumns + 1] = 3;
-
-	mask[25*p->maskcolumns + 0] = 0;
-	mask[25*p->maskcolumns + 1] = 3;
-
-	mask[26*p->maskcolumns + 0] = -1;
-	mask[26*p->maskcolumns + 1] = 3;
-}
-
-/*
  * Runs benchmark.
  */
 int main(int argc, char **argv){
-	int i, bar = 0;              /* Loop index.            */
-	int *mask;       	/* Mask.                  */
+	int i, countp, countm, offset = 0, additional,	elements_per_process, n_elements, outside, total;              /* Loop index.            */
 	uint64_t end;       /* End time.              */
 	uint64_t start;     /* Start time.            */
 	char *img; 			/* Image.                 */
@@ -228,49 +144,71 @@ int main(int argc, char **argv){
 
 	readargs(argc, argv);
 
-	if(tid == 0)
+	n_elements = p->imgsize*p->imgsize;
+	if(tid == 0){
 		timer_init();
+		srandnum(seed);
 
-	srandnum(seed);
+		if (verbose)
+			printf("initializing...\n");
 
-	/* Benchmark initialization. */
-	if (verbose && (tid == 0))
-		printf("initializing...\n");
-
-	MPI_Barrier(MPI_COMM_WORLD);
-
-	if(tid == 0)
 		start = timer_get();
 
-	img = smalloc(p->imgsize*p->imgsize*sizeof(char));
+		img = smalloc(n_elements*sizeof(char));
 
-	for (i = 0; i < p->imgsize*p->imgsize; i++){
-		char val = randnum() & 0xff;
-		img[i] = (val>0) ? val : val*(-1);
+		for (i = 0; i < n_elements; i++){
+			char val = randnum() & 0xff;
+			img[i] = (val>0) ? val : val*(-1);
+		}
+
+		additional = p->imgsize * 3; //3 linhas
+		elements_per_process = n_elements/(nprocs-1);
+		for(i = 1; i < nprocs; i++){
+			offset = elements_per_process * (i-1);
+			countp = additional*2;
+
+			outside = additional - offset;
+			if(outside > 0){
+				countm = -offset;
+				countp = countp - outside;
+			}
+			else{
+				countm = -additional;
+			}
+
+			total = offset+countm+elements_per_process+countp;
+			countp = total > n_elements ? countp - (total - n_elements)/p->imgsize : countp;
+
+			total = elements_per_process+countp;
+			MPI_Send(&total, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+			MPI_Send(img+(offset+countm), elements_per_process+countp, MPI_BYTE, i, 0, MPI_COMM_WORLD);
+		}
+	}
+	else{
+		MPI_Recv(&total, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, 0);
+
+		img = smalloc(total*sizeof(char));
+
+		MPI_Recv(img, total, MPI_BYTE, 0, 0, MPI_COMM_WORLD, 0);
 	}
 
-	mask = smalloc(p->maskrows*p->maskcolumns*sizeof(int));
-	generate_mask(mask);
-
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	if(tid == 0)
+	if(tid == 0){
 		end = timer_get();
 
-	if (verbose && (tid == 0))
-		printf("  time spent: %f\n", timer_diff(start, end)*MICROSEC);
-
-	/* Detect corners. */
-	if (verbose && (tid == 0))
-		printf("detecting corners...\n");
-
+		if (verbose){
+			printf("  time spent: %f\n", timer_diff(start, end)*MICROSEC);
+			printf("detecting corners...\n");
+		}
+	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(tid == 0)
 		start = timer_get();
-
-	numcorners = fast(img, p->imgsize, mask);
+	else
+		numcorners = fast(img, p->imgsize);
 
 	MPI_Reduce(&numcorners, &totalcorners, 1, MPI_INT, MPI_SUM, 0,
              MPI_COMM_WORLD);
@@ -284,10 +222,8 @@ int main(int argc, char **argv){
 	}
 
 	/* House keeping. */
-	free(mask);
 	free(img);
 
-	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
 	return (0);
 }

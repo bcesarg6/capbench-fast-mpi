@@ -16,16 +16,19 @@
  * FAST corner detection.
  */
 
-int fast(char *img, int imgsize, int *mask)
+//Necessita cálculo para o inicio do for (j) e para o tamanho da imagem (primeiro if)
+int fast(char *img, int imgsize)
 {
 	int i,j,k,r,z,x,y;
 	char accumBrighter, accumDarker;
 	char imagePixel,centralPixel;
 	int corners[1] = {0};
 	int numcorners = 0;
+	int n_lines;
 
+	n_lines = imgsize/(nprocs-1);
 	{
-		for (j = (imgsize/nprocs) * (tid); j < (imgsize/nprocs) * (tid + 1); j++){
+		for (j = 0; j < n_lines; j++){
 			for (i = 0; i < imgsize; i++){
 
 				centralPixel = img[j*imgsize + i];

@@ -22,6 +22,8 @@
  * FAST corner detection.
  */
 extern int
-fast(char *img, int imgsize, int *mask);
+fast(char *img, int imgsize);
+
+extern int mask[54];
 
 #endif /* _FAST_H_ */
