@@ -16,8 +16,10 @@
  * FAST corner detection.
  */
 
-//Necessita cálculo para o inicio do for (j) e para o tamanho da imagem (primeiro if)
-int fast(char *img, int imgsize)
+int mask[] = {-1, -3, 0, -3, 1, -3, 2, -2, 3, -1, 3, 0, 3, 1, 2, 2, 1, 3, 0, 3, -1, 3, -2, 2, -3, 1,
+ 	-3, 0, -3, -1, -2, -2, -1, -3, 0, -3, 1, -3, 2, -2, 3, -1, 3, 0, 3, 1, 2, 2, 1, 3, 0, 3, -1, 3};
+
+int fast(char *img, int imgsize, int total, int init)
 {
 	int i,j,k,r,z,x,y;
 	char accumBrighter, accumDarker;
@@ -26,9 +28,9 @@ int fast(char *img, int imgsize)
 	int numcorners = 0;
 	int n_lines;
 
-	n_lines = imgsize/(nprocs-1);
+	n_lines = imgsize/(nprocs-1) + init;
 	{
-		for (j = 0; j < n_lines; j++){
+		for (j = init; j < n_lines; j++){
 			for (i = 0; i < imgsize; i++){
 
 				centralPixel = img[j*imgsize + i];
@@ -42,7 +44,7 @@ int fast(char *img, int imgsize)
 						x = i + mask[((r+z) * 2) + 0];
 						y = j + mask[((r+z) * 2) + 1];
 
-						if(x >=0 && y>=0 && ((y * imgsize + x) < (imgsize*imgsize))){
+						if(x >=0 && y>=0 && ((y * imgsize + x) < total)){
 							imagePixel = img[y * imgsize + x];
 
 							if(imagePixel >= (centralPixel + THRESHOLD)){

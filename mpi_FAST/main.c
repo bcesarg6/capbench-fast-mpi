@@ -46,9 +46,6 @@ static int seed = 0;
 /* Problem. */
 static struct problem *p = &tiny;
 
-int mask[] = {-1, -3, 0, -3, 1, -3, 2, -2, 3, -1, 3, 0, 3, 1, 2, 2, 1, 3, 0, 3, -1, 3, -2, 2, -3, 1,
-	-3, 0, -3, -1, -2, -2, -1, -3, 0, -3, 1, -3, 2, -2, 3, -1, 3, 0, 3, 1, 2, 2, 1, 3, 0, 3, -1, 3};
-
 /*
  * Prints program usage and exits.
  */
@@ -126,10 +123,11 @@ static void readargs(int argc, char **argv){
  * Runs benchmark.
  */
 int main(int argc, char **argv){
-	int i, countp, countm, offset = 0, additional,	elements_per_process, n_elements, outside, total;              /* Loop index.            */
+	int i, countp, countm, offset, additional,	elements_per_process, n_elements, outside, total;              /* Loop index.            */
 	uint64_t end;       /* End time.              */
 	uint64_t start;     /* Start time.            */
 	char *img; 			/* Image.                 */
+	int counts[3];
 	int numcorners = 0, totalcorners = 0;	/* Total corners detected */
 
 	/* initialize MPI */
@@ -142,10 +140,20 @@ int main(int argc, char **argv){
 	MPI_Comm_rank(MPI_COMM_WORLD, &tid);
 	/* end mpi */
 
-	readargs(argc, argv);
 
-	n_elements = p->imgsize*p->imgsize;
 	if(tid == 0){
+		if((nprocs == 1) || ((((nprocs-1)%2) != 0) && (nprocs != 2)) ){
+			printf("incorrect number o processes(%d), use n_processes+1 and n_processes needs to be divisible by 2, aborting...\n", nprocs);
+			MPI_Abort(MPI_COMM_WORLD, 0);
+		}
+
+		readargs(argc, argv);
+		counts[2] = p->imgsize;
+
+		n_elements = p->imgsize*p->imgsize;
+		additional = p->imgsize * 3; //3 linhas, definido pelo mask
+		elements_per_process = n_elements/(nprocs-1);
+
 		timer_init();
 		srandnum(seed);
 
@@ -161,38 +169,34 @@ int main(int argc, char **argv){
 			img[i] = (val>0) ? val : val*(-1);
 		}
 
-		additional = p->imgsize * 3; //3 linhas
-		elements_per_process = n_elements/(nprocs-1);
 		for(i = 1; i < nprocs; i++){
 			offset = elements_per_process * (i-1);
 			countp = additional*2;
 
 			outside = additional - offset;
 			if(outside > 0){
-				countm = -offset;
+				countm = offset;
 				countp = countp - outside;
 			}
 			else{
-				countm = -additional;
+				countm = additional;
 			}
 
-			total = offset+countm+elements_per_process+countp;
-			countp = total > n_elements ? countp - (total - n_elements)/p->imgsize : countp;
-
+			total = offset-countm+elements_per_process+countp;
+			countp = total > n_elements ? countp - (total - n_elements) : countp;
 			total = elements_per_process+countp;
-			MPI_Send(&total, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-			MPI_Send(img+(offset+countm), elements_per_process+countp, MPI_BYTE, i, 0, MPI_COMM_WORLD);
+
+			counts[0] = total;
+			counts[1] = countm/p->imgsize;
+			MPI_Send(counts, 3, MPI_INT, i, 0, MPI_COMM_WORLD);
+			MPI_Send(img+(offset-countm), elements_per_process+countp, MPI_BYTE, i, 0, MPI_COMM_WORLD);
 		}
 	}
 	else{
-		MPI_Recv(&total, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, 0);
-
-		img = smalloc(total*sizeof(char));
-
-		MPI_Recv(img, total, MPI_BYTE, 0, 0, MPI_COMM_WORLD, 0);
+		MPI_Recv(counts, 3, MPI_INT, 0, 0, MPI_COMM_WORLD, 0);
+		img = smalloc(counts[0]*sizeof(char));
+		MPI_Recv(img, counts[0], MPI_BYTE, 0, 0, MPI_COMM_WORLD, 0);
 	}
-
-	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(tid == 0){
 		end = timer_get();
@@ -208,7 +212,7 @@ int main(int argc, char **argv){
 	if(tid == 0)
 		start = timer_get();
 	else
-		numcorners = fast(img, p->imgsize);
+		numcorners = fast(img, counts[2], counts[0], counts[1]);
 
 	MPI_Reduce(&numcorners, &totalcorners, 1, MPI_INT, MPI_SUM, 0,
              MPI_COMM_WORLD);
