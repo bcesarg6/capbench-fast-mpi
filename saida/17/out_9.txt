@@ -1,0 +1,6 @@
+initializing...
+  time spent: 0.129940
+detecting corners...
+timing statistics:
+  total time:       0.225293
+  corners detected: 295120
