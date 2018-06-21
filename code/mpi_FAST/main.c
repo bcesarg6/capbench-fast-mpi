@@ -142,6 +142,7 @@ int main(int argc, char **argv){
 
 
 	if(tid == 0){
+		printf("Iniciando leitura de argumentos\n");
 		if((nprocs == 1) || ((((nprocs-1)%2) != 0) && (nprocs != 2)) ){
 			printf("incorrect number o processes(%d), use n_processes+1 and n_processes needs to be divisible by 2, aborting...\n", nprocs);
 			MPI_Abort(MPI_COMM_WORLD, 0);
@@ -168,6 +169,7 @@ int main(int argc, char **argv){
 			char val = randnum() & 0xff;
 			img[i] = (val>0) ? val : val*(-1);
 		}
+		printf("Terminado alocação e preenchimento da matriz\n");
 
 		for(i = 1; i < nprocs; i++){
 			offset = elements_per_process * (i-1);
@@ -188,8 +190,10 @@ int main(int argc, char **argv){
 
 			counts[0] = total;
 			counts[1] = countm/p->imgsize;
+			printf("Enviando dados de %d para %d\n", tid, i);
 			MPI_Send(counts, 3, MPI_INT, i, 0, MPI_COMM_WORLD);
 			MPI_Send(img+(offset-countm), elements_per_process+countp, MPI_BYTE, i, 0, MPI_COMM_WORLD);
+			printf("Terminado envio de %d para %d\n", tid, i);
 		}
 	}
 	else{

@@ -1,6 +1,16 @@
+Iniciando leitura de argumentos
 initializing...
-  time spent: 0.053452
+Terminado alocação e preenchimento da matriz
+Enviando dados de 0 para 1
+Terminado envio de 0 para 1
+Enviando dados de 0 para 2
+Terminado envio de 0 para 2
+Enviando dados de 0 para 3
+Terminado envio de 0 para 3
+Enviando dados de 0 para 4
+Terminado envio de 0 para 4
+  time spent: 40.817336
 detecting corners...
 timing statistics:
-  total time:       0.292110
-  corners detected: 295120
+  total time:       22.976371
+  corners detected: 42605928
