@@ -1,3 +1,0 @@
-global:
-  mask: matriz (linear) com valores definidos
-  img: matriz (linear) de sizexsize de chars aleatórios
