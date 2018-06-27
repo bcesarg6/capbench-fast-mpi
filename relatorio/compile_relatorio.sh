@@ -6,7 +6,7 @@ make
 cp *.pdf ../
 echo ""
 
-echo "Compilano TEX"
+echo "Compilando TEX"
 cd ..
 make >ttt
 make >ttt

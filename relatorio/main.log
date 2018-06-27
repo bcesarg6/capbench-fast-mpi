@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.5.3)  22 JUN 2018 23:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.5.3)  26 JUN 2018 22:12
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -104,6 +104,26 @@ File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
 \Urlmuskip=\muskip10
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
+(/usr/share/texlive/texmf-dist/tex/generic/babel/babel.sty
+Package: babel 2018/02/14 3.18 The Babel package
+
+(/usr/share/texlive/texmf-dist/tex/generic/babel/switch.def
+File: switch.def 2018/02/14 3.18 Babel switching mechanism
+)
+(/usr/share/texlive/texmf-dist/tex/generic/babel-portuges/portuges.ldf
+Language: portuges 2008/03/18 v1.2q Portuguese support from the babel system
+
+(/usr/share/texlive/texmf-dist/tex/generic/babel/babel.def
+File: babel.def 2018/02/14 3.18 Babel common definitions
+\babel@savecnt=\count91
+\U@D=\dimen122
+
+(/usr/share/texlive/texmf-dist/tex/generic/babel/txtbabel.def)
+\bbl@dirlevel=\count92
+)
+\l@brazil = a dialect from \language\l@portuges 
+Package babel Info: Making " an active character on input line 145.
+))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
 Package: inputenc 2015/03/17 v1.2c Input encoding file
 \inpenc@prehook=\toks17
@@ -421,11 +441,7 @@ Now handling font encoding U ...
    defining Unicode char U+2026 (decimal 8230)
    defining Unicode char U+2122 (decimal 8482)
    defining Unicode char U+2423 (decimal 9251)
-)) (./main.aux
-
-LaTeX Warning: Label `fig:desvios' multiply defined.
-
-)
+)) (./main.aux)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
@@ -441,7 +457,8 @@ LaTeX Font Info:    ... okay on input line 37.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 37.
 LaTeX Font Info:    ... okay on input line 37.
 LaTeX Font Info:    Try loading font information for OT1+ptm on input line 37.
- (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd
+
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 )
 *geometry* driver: auto-detecting
@@ -480,16 +497,16 @@ File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count91
-\scratchdimen=\dimen122
+\scratchcounter=\count93
+\scratchdimen=\dimen123
 \scratchbox=\box27
-\nofMPsegments=\count92
-\nofMParguments=\count93
+\nofMPsegments=\count94
+\nofMParguments=\count95
 \everyMPshowfont=\toks19
-\MPscratchCnt=\count94
-\MPscratchDim=\dimen123
-\MPnumerator=\count95
-\makeMPintoPDFobject=\count96
+\MPscratchCnt=\count96
+\MPscratchDim=\dimen124
+\MPnumerator=\count97
+\makeMPintoPDFobject=\count98
 \everyMPtoPDFconversion=\toks20
 ) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
@@ -560,65 +577,62 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <13> not available
 
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-<l_ops.pdf, id=11, 505.89pt x 505.89pt>
-File: l_ops.pdf Graphic file (type pdf)
-<use l_ops.pdf>
-Package pdftex.def Info: l_ops.pdf  used on input line 73.
-(pdftex.def)             Requested size: 213.39568pt x 213.39865pt.
-LaTeX Font Info:    Try loading font information for OT1+phv on input line 74.
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 70.
+
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/omsptm.fd
+File: omsptm.fd 
+)
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 70.
+<sp.pdf, id=16, 505.89pt x 505.89pt>
+File: sp.pdf Graphic file (type pdf)
+<use sp.pdf>
+Package pdftex.def Info: sp.pdf  used on input line 83.
+(pdftex.def)             Requested size: 256.07741pt x 256.07838pt.
+LaTeX Font Info:    Try loading font information for OT1+phv on input line 84.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1phv.fd
 File: ot1phv.fd 2001/06/04 scalable font definitions for OT1/phv.
 )
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <10> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 74.
- [2]
-<b_sp.pdf, id=17, 505.89pt x 505.89pt>
-File: b_sp.pdf Graphic file (type pdf)
-<use b_sp.pdf>
-Package pdftex.def Info: b_sp.pdf  used on input line 85.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 84.
+ [3]
+<msgs.pdf, id=20, 505.89pt x 505.89pt>
+File: msgs.pdf Graphic file (type pdf)
+<use msgs.pdf>
+Package pdftex.def Info: msgs.pdf  used on input line 94.
 (pdftex.def)             Requested size: 256.07741pt x 256.07838pt.
-<b_ctx.pdf, id=18, 505.89pt x 505.89pt>
-File: b_ctx.pdf Graphic file (type pdf)
-<use b_ctx.pdf>
-Package pdftex.def Info: b_ctx.pdf  used on input line 94.
+<msgsp.pdf, id=21, 505.89pt x 505.89pt>
+File: msgsp.pdf Graphic file (type pdf)
+<use msgsp.pdf>
+Package pdftex.def Info: msgsp.pdf  used on input line 101.
 (pdftex.def)             Requested size: 256.07741pt x 256.07838pt.
-<b_bm.pdf, id=19, 505.89pt x 505.89pt>
-File: b_bm.pdf Graphic file (type pdf)
-<use b_bm.pdf>
-Package pdftex.def Info: b_bm.pdf  used on input line 103.
-(pdftex.def)             Requested size: 256.07741pt x 256.07838pt.
- [3 <./l_ops.pdf>]
-File: b_bm.pdf Graphic file (type pdf)
-<use b_bm.pdf>
-Package pdftex.def Info: b_bm.pdf  used on input line 110.
-(pdftex.def)             Requested size: 256.07741pt x 256.07838pt.
- (./main.bbl [4 <./b_sp.pdf>]) [5 <./b_ctx.pdf>] [6 <./b_bm.pdf>] (./main.aux)
+ [4 <./sp.pdf> <./msgs.pdf>]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-LaTeX Warning: There were multiply-defined labels.
-
- ) 
+ [5 <./msgsp.pdf>] (./main.bbl) [6] (./main.aux) ) 
 Here is how much of TeX's memory you used:
- 2887 strings out of 494830
- 38884 string characters out of 6178380
- 106582 words of memory out of 5000000
- 6160 multiletter control sequences out of 15000+600000
+ 3427 strings out of 494830
+ 46128 string characters out of 6178380
+ 121697 words of memory out of 5000000
+ 6681 multiletter control sequences out of 15000+600000
  20011 words of font info for 41 fonts, out of 8000000 for 9000
  61 hyphenation exceptions out of 8191
- 41i,8n,28p,959b,228s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/f
-onts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/t
-ype1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/tim
-es/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb>
-</usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 112921 bytes).
+ 41i,8n,28p,1210b,232s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texlive/texmf-dis
+t/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
+msy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></
+usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw
+/times/utmri8a.pfb>
+Output written on main.pdf (6 pages, 112403 bytes).
 PDF statistics:
- 85 PDF objects out of 1000 (max. 8388607)
- 60 compressed objects within 1 object stream
+ 79 PDF objects out of 1000 (max. 8388607)
+ 56 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 21 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 
