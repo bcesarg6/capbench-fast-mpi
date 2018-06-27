@@ -1,0 +1,40 @@
+Iniciando leitura de argumentos
+initializing...
+Terminado alocação e preenchimento da matriz
+Enviando dados de 0 para 1
+Terminado envio de 0 para 1
+Enviando dados de 0 para 2
+Terminado envio de 0 para 2
+Enviando dados de 0 para 3
+Terminado envio de 0 para 3
+Enviando dados de 0 para 4
+Terminado envio de 0 para 4
+Enviando dados de 0 para 5
+Terminado envio de 0 para 5
+Enviando dados de 0 para 6
+Terminado envio de 0 para 6
+Enviando dados de 0 para 7
+Terminado envio de 0 para 7
+Enviando dados de 0 para 8
+Terminado envio de 0 para 8
+Enviando dados de 0 para 9
+Terminado envio de 0 para 9
+Enviando dados de 0 para 10
+Terminado envio de 0 para 10
+Enviando dados de 0 para 11
+Terminado envio de 0 para 11
+Enviando dados de 0 para 12
+Terminado envio de 0 para 12
+Enviando dados de 0 para 13
+Terminado envio de 0 para 13
+Enviando dados de 0 para 14
+Terminado envio de 0 para 14
+Enviando dados de 0 para 15
+Terminado envio de 0 para 15
+Enviando dados de 0 para 16
+Terminado envio de 0 para 16
+  time spent: 47.400861
+detecting corners...
+timing statistics:
+  total time:       5.909669
+  corners detected: 42605927
