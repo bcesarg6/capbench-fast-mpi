@@ -6,7 +6,7 @@ make
 echo ""
 
 echo "FAST mpi e mpiP..."
-cd ../mpi_FAST
+cd ../mpi_FAST_threads
 make
 make mpip
 echo ""
