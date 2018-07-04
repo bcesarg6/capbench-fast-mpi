@@ -43,10 +43,11 @@ static struct problem small    = { 2,27,54,  4096};
 static struct problem standard = { 2,27,54,  8192};
 static struct problem large    = { 2,27,54, 16384};
 static struct problem huge     = { 2,27,54, 24576};
+static struct problem xhuge    = { 2,27,54, 32768};
 
 int nprocs;
 int nthreads;
-int tid;
+int pid;
 
 /* Be verbose? */
 int verbose = 0;
@@ -110,6 +111,8 @@ static struct problem *p = &tiny;
  						p = &large;
  					else if (!strcmp(argv[i], "huge"))
  						p = &huge;
+					else if (!strcmp(argv[i], "xhuge"))
+	 					p = &xhuge;
  					else
  						usage();
  					state = READ_ARG;
@@ -145,11 +148,12 @@ static struct problem *p = &tiny;
  }
 
 void* sendData(void* data){
-	pthread_arg* args= (pthread_arg*) data;
-	int i, loops, offset, countp, countm, outside, total, counts[3];
+	pthread_arg* args = (pthread_arg*) data;
+	int i, loops, offset, countp, countm, outside, total, counts[4];
 
 	loops = (nprocs-1)/nthreads;
 	counts[2] = p->imgsize;
+	counts[3] = nthreads;
 	for(i = loops*args->tid; i < loops*(args->tid+1); i++){
 		offset = args->elements_per_process * (i);
 		countp = args->additional*2;
@@ -169,10 +173,10 @@ void* sendData(void* data){
 
 		counts[0] = total;
 		counts[1] = countm/p->imgsize;
-		printf("Enviando dados de %d com thread %d para %d\n", args->pid, args->tid, i+1);
-		MPI_Send(counts, 3, MPI_INT, i+1, 0, MPI_COMM_WORLD);
+		//printf("Enviando dados de %d com thread %d para %d\n", args->pid, args->tid, i+1);
+		MPI_Send(counts, 4, MPI_INT, i+1, 0, MPI_COMM_WORLD);
 		MPI_Send(args->img+(offset-countm), args->elements_per_process+countp, MPI_BYTE, i+1, 0, MPI_COMM_WORLD);
-		printf("Terminado envio de %d com thread %d para %d\n", args->pid, args->tid, i+1);
+		//printf("Terminado envio de %d com thread %d para %d\n", args->pid, args->tid, i+1);
 	}
 }
 
@@ -184,7 +188,7 @@ int main(int argc, char **argv){
 	uint64_t end;       /* End time.              */
 	uint64_t start;     /* Start time.            */
 	char *img; 			/* Image.                 */
-	int counts[3], provided;
+	int counts[4], provided;
 	pthread_arg* args;
 	pthread_t* threads;
 	int numcorners = 0, totalcorners = 0;	/* Total corners detected */
@@ -199,12 +203,12 @@ if (provided < MPI_THREAD_MULTIPLE)
 	// Get the number of cores in the MPI cluster
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-	// Get the tID number of this core in the MPI cluster
-	MPI_Comm_rank(MPI_COMM_WORLD, &tid);
+	// Get the pid number of this core in the MPI cluster
+	MPI_Comm_rank(MPI_COMM_WORLD, &pid);
 	/* end mpi */
 
 
-	if(tid == 0){
+	if(pid == 0){
 		printf("Iniciando leitura de argumentos\n");
 		if((nprocs == 1) || ((((nprocs-1)%2) != 0) && (nprocs != 2)) ){
 			printf("incorrect number o processes(%d), use n_processes+1 and n_processes needs to be divisible by 2, aborting...\n", nprocs);
@@ -213,8 +217,8 @@ if (provided < MPI_THREAD_MULTIPLE)
 
 		readargs(argc, argv);
 
-		threads = (pthread_t*)malloc(nthreads * sizeof(pthread_t));
-		args = (pthread_arg*)malloc(nthreads * sizeof(pthread_arg));
+		threads = (pthread_t*)smalloc(nthreads * sizeof(pthread_t));
+		args = (pthread_arg*)smalloc(nthreads * sizeof(pthread_arg));
 
 		n_elements = p->imgsize*p->imgsize;
 		additional = p->imgsize * 3; //3 linhas, definido pelo mask
@@ -236,28 +240,60 @@ if (provided < MPI_THREAD_MULTIPLE)
 		}
 		printf("Terminado alocação e preenchimento da matriz\n");
 
-		for(i = 0; i < nthreads; i++){
-			args[i].tid = i;
-			args[i].pid = tid;
-			args[i].elements_per_process = elements_per_process;
-			args[i].additional = additional;
-			args[i].n_elements = n_elements;
-			args[i].img = img;
-			pthread_create(threads+i, NULL, sendData, args+i);
+		if(((nprocs-1)/nthreads) > 0){
+			for(i = 0; i < nthreads; i++){
+				args[i].tid = i;
+				args[i].pid = pid;
+				args[i].elements_per_process = elements_per_process;
+				args[i].additional = additional;
+				args[i].n_elements = n_elements;
+				args[i].img = img;
+				//printf("criando threads\n");
+				pthread_create(threads+i, NULL, sendData, args+i);
+			}
+			for(i = 0; i < nthreads; i++){
+				pthread_join(threads[i], NULL);
+			}
 		}
-		for(i = 0; i < nthreads; i++){
-			pthread_join(threads[i], NULL);
-	  }
+		else{
+			counts[2] = p->imgsize;
+			counts[3] = nthreads;
+			for(i = 1; i < nprocs; i++){
+				offset = elements_per_process * (i-1);
+				countp = additional*2;
+
+				outside = additional - offset;
+				if(outside > 0){
+					countm = offset;
+					countp = countp - outside;
+				}
+				else{
+					countm = additional;
+				}
+
+				total = offset-countm+elements_per_process+countp;
+				countp = total > n_elements ? countp - (total - n_elements) : countp;
+				total = elements_per_process+countp;
+
+				counts[0] = total;
+				counts[1] = countm/p->imgsize;
+				//printf("Enviando dados de %d para %d\n", pid, i);
+				MPI_Send(counts, 4, MPI_INT, i, 0, MPI_COMM_WORLD);
+				MPI_Send(img+(offset-countm), elements_per_process+countp, MPI_BYTE, i, 0, MPI_COMM_WORLD);
+				//printf("Terminado envio de %d para %d\n", pid, i);
+			}
+		}
 	}
 	else{
-		MPI_Recv(counts, 3, MPI_INT, 0, 0, MPI_COMM_WORLD, 0);
-		printf("Recebido counts para %d\n", tid);
+		MPI_Recv(counts, 4, MPI_INT, 0, 0, MPI_COMM_WORLD, 0);
+		//printf("Recebido counts para %d\n", pid);
+		nthreads = counts[3];
 		img = smalloc(counts[0]*sizeof(char));
 		MPI_Recv(img, counts[0], MPI_BYTE, 0, 0, MPI_COMM_WORLD, 0);
-		printf("Recebido img para %d\n", tid);
+		//printf("Recebido img para %d\n", pid);
 	}
 
-	if(tid == 0){
+	if(pid == 0){
 		end = timer_get();
 
 		if (verbose){
@@ -268,7 +304,7 @@ if (provided < MPI_THREAD_MULTIPLE)
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	if(tid == 0)
+	if(pid == 0)
 		start = timer_get();
 	else
 		numcorners = fast(img, counts[2], counts[0], counts[1]);
@@ -276,12 +312,15 @@ if (provided < MPI_THREAD_MULTIPLE)
 	MPI_Reduce(&numcorners, &totalcorners, 1, MPI_INT, MPI_SUM, 0,
              MPI_COMM_WORLD);
 
-	if(tid == 0){
+	if(pid == 0){
 		end = timer_get();
 		printf("timing statistics:\n");
 		printf("  total time:       %f\n", timer_diff(start, end)*MICROSEC);
 
 		printf("  corners detected: %d\n", totalcorners);
+
+		free(threads);
+		free(args);
 	}
 
 	/* House keeping. */

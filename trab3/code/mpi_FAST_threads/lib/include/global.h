@@ -9,7 +9,7 @@
 
 extern int nprocs;
 extern int nthreads;
-extern int tid;
+extern int pid;
 
 /*
  * Be verbose?

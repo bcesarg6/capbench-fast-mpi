@@ -47,10 +47,12 @@ void* fast_thread(void* data){
   n_lines = args->n_lines;
   tid = args->tid;
   img = args->img;
-  //printf("init: %d, tid: %d, pid: %d, n_lines: %d, img_as: %c, img_s: %c, img_f: %c, total: %d\n",
-  //        init, tid, pid, n_lines, img[init], img[init + (tid*n_lines)], img[init + ((tid+1)*n_lines)], total);
+  printf("init: %d, tid: %d, pid: %d, n_lines: %d, img_as: %c, img_s: %c, img_f: %c, total: %d\n",
+          init, tid, pid, n_lines, img[init], img[init + (tid*n_lines)], img[init + ((tid+1)*n_lines)], total);
   {
 		for (j = init + (tid*n_lines); j < init + ((tid+1)*n_lines); j++){
+      if(j > 510)
+        printf("j: %d, tid: %d\n",j, tid);
 			for (i = 0; i < imgsize; i++){
 
 				centralPixel = img[j*imgsize + i];
@@ -119,7 +121,7 @@ int fast(char *img, int imgsize, int total, int init){
   args = (pthread_arg*)malloc(nthreads * sizeof(pthread_arg));
 
 	n_lines = imgsize/(nprocs-1)/nthreads;
-  //printf("nlines: %d\n", n_lines);
+  printf("nlines: %d\n", n_lines);
 
   for(i = 0; i < nthreads; i++){
     args[i].tid = i;
@@ -141,7 +143,7 @@ int fast(char *img, int imgsize, int total, int init){
   }
 
   for(i = 0; i < nthreads; i++){
-    numcorners += args[i].res;
+    numcorners += args->res;
   }
 
   free(threads);

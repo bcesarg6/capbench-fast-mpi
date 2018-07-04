@@ -33,6 +33,7 @@ static struct problem small    = { 2,27,54,  4096};
 static struct problem standard = { 2,27,54,  8192};
 static struct problem large    = { 2,27,54, 16384};
 static struct problem huge     = { 2,27,54, 24576};
+static struct problem xhuge    = { 2,27,54, 32768};
 
 /* Be verbose? */
 int verbose = 0;
@@ -99,6 +100,8 @@ static void readargs(int argc, char **argv){
 						p = &large;
 					else if (!strcmp(argv[i], "huge"))
 						p = &huge;
+					else if (!strcmp(argv[i], "xhuge"))
+						p = &xhuge;
 					else
 						usage();
 					state = READ_ARG;
