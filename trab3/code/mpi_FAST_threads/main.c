@@ -193,8 +193,8 @@ int main(int argc, char **argv){
 	pthread_t* threads;
 	int numcorners = 0, totalcorners = 0;	/* Total corners detected */
 
-	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-if (provided < MPI_THREAD_MULTIPLE)
+	MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
+if (provided < MPI_THREAD_SERIALIZED)
 {
    printf("Error: the MPI library doesn't provide the required thread level\n");
    MPI_Abort(MPI_COMM_WORLD, 0);
@@ -241,6 +241,7 @@ if (provided < MPI_THREAD_MULTIPLE)
 		printf("Terminado alocação e preenchimento da matriz\n");
 
 		if(((nprocs-1)/nthreads) > 0){
+			printf("paralelizando envio\n");
 			for(i = 0; i < nthreads; i++){
 				args[i].tid = i;
 				args[i].pid = pid;
