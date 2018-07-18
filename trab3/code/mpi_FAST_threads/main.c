@@ -147,39 +147,6 @@ static struct problem *p = &tiny;
  		usage();
  }
 
-void* sendData(void* data){
-	pthread_arg* args = (pthread_arg*) data;
-	int i, loops, offset, countp, countm, outside, total, counts[4];
-
-	loops = (nprocs-1)/nthreads;
-	counts[2] = p->imgsize;
-	counts[3] = nthreads;
-	for(i = loops*args->tid; i < loops*(args->tid+1); i++){
-		offset = args->elements_per_process * (i);
-		countp = args->additional*2;
-
-		outside = args->additional - offset;
-		if(outside > 0){
-			countm = offset;
-			countp = countp - outside;
-		}
-		else{
-			countm = args->additional;
-		}
-
-		total = offset-countm+args->elements_per_process+countp;
-		countp = total > args->n_elements ? countp - (total -args->n_elements) : countp;
-		total = args->elements_per_process+countp;
-
-		counts[0] = total;
-		counts[1] = countm/p->imgsize;
-		//printf("Enviando dados de %d com thread %d para %d\n", args->pid, args->tid, i+1);
-		MPI_Send(counts, 4, MPI_INT, i+1, 0, MPI_COMM_WORLD);
-		MPI_Send(args->img+(offset-countm), args->elements_per_process+countp, MPI_BYTE, i+1, 0, MPI_COMM_WORLD);
-		//printf("Terminado envio de %d com thread %d para %d\n", args->pid, args->tid, i+1);
-	}
-}
-
 /*
  * Runs benchmark.
  */
@@ -189,8 +156,6 @@ int main(int argc, char **argv){
 	uint64_t start;     /* Start time.            */
 	char *img; 			/* Image.                 */
 	int counts[4], provided;
-	pthread_arg* args;
-	pthread_t* threads;
 	int numcorners = 0, totalcorners = 0;	/* Total corners detected */
 
 	MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
@@ -217,9 +182,6 @@ if (provided < MPI_THREAD_SERIALIZED)
 
 		readargs(argc, argv);
 
-		threads = (pthread_t*)smalloc(nthreads * sizeof(pthread_t));
-		args = (pthread_arg*)smalloc(nthreads * sizeof(pthread_arg));
-
 		n_elements = p->imgsize*p->imgsize;
 		additional = p->imgsize * 3; //3 linhas, definido pelo mask
 		elements_per_process = n_elements/(nprocs-1);
@@ -240,49 +202,31 @@ if (provided < MPI_THREAD_SERIALIZED)
 		}
 		printf("Terminado alocação e preenchimento da matriz\n");
 
-		if(((nprocs-1)/nthreads) > 0){
-			printf("paralelizando envio\n");
-			for(i = 0; i < nthreads; i++){
-				args[i].tid = i;
-				args[i].pid = pid;
-				args[i].elements_per_process = elements_per_process;
-				args[i].additional = additional;
-				args[i].n_elements = n_elements;
-				args[i].img = img;
-				//printf("criando threads\n");
-				pthread_create(threads+i, NULL, sendData, args+i);
-			}
-			for(i = 0; i < nthreads; i++){
-				pthread_join(threads[i], NULL);
-			}
-		}
-		else{
-			counts[2] = p->imgsize;
-			counts[3] = nthreads;
-			for(i = 1; i < nprocs; i++){
-				offset = elements_per_process * (i-1);
-				countp = additional*2;
+		counts[2] = p->imgsize;
+		counts[3] = nthreads;
+		for(i = 1; i < nprocs; i++){
+			offset = elements_per_process * (i-1);
+			countp = additional*2;
 
-				outside = additional - offset;
-				if(outside > 0){
-					countm = offset;
-					countp = countp - outside;
-				}
-				else{
-					countm = additional;
-				}
-
-				total = offset-countm+elements_per_process+countp;
-				countp = total > n_elements ? countp - (total - n_elements) : countp;
-				total = elements_per_process+countp;
-
-				counts[0] = total;
-				counts[1] = countm/p->imgsize;
-				//printf("Enviando dados de %d para %d\n", pid, i);
-				MPI_Send(counts, 4, MPI_INT, i, 0, MPI_COMM_WORLD);
-				MPI_Send(img+(offset-countm), elements_per_process+countp, MPI_BYTE, i, 0, MPI_COMM_WORLD);
-				//printf("Terminado envio de %d para %d\n", pid, i);
+			outside = additional - offset;
+			if(outside > 0){
+				countm = offset;
+				countp = countp - outside;
 			}
+			else{
+				countm = additional;
+			}
+
+			total = offset-countm+elements_per_process+countp;
+			countp = total > n_elements ? countp - (total - n_elements) : countp;
+			total = elements_per_process+countp;
+
+			counts[0] = total;
+			counts[1] = countm/p->imgsize;
+			//printf("Enviando dados de %d para %d\n", pid, i);
+			MPI_Send(counts, 4, MPI_INT, i, 0, MPI_COMM_WORLD);
+			MPI_Send(img+(offset-countm), elements_per_process+countp, MPI_BYTE, i, 0, MPI_COMM_WORLD);
+			//printf("Terminado envio de %d para %d\n", pid, i);
 		}
 	}
 	else{
@@ -319,9 +263,6 @@ if (provided < MPI_THREAD_SERIALIZED)
 		printf("  total time:       %f\n", timer_diff(start, end)*MICROSEC);
 
 		printf("  corners detected: %d\n", totalcorners);
-
-		free(threads);
-		free(args);
 	}
 
 	/* House keeping. */

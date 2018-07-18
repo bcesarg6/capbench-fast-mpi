@@ -1,8 +1,0 @@
-Iniciando leitura de argumentos
-initializing...
-Terminado alocação e preenchimento da matriz
-  time spent: 49.655315
-detecting corners...
-timing statistics:
-  total time:       41.767596
-  corners detected: 75752066
