@@ -8,5 +8,5 @@ y_lim <- range(0, vals)
 
 pdf("msgs.pdf")
 
-barplot(mat, main="Tempo de envio e recebimento dos dados", xlab="N processos", ylab="Segundos", ylim=y_lim, col=c("yellow", "red", "blue", "green", "purple", "orange"),
+barplot(mat, main="", xlab="Número de fluxos", ylab="Segundos", ylim=y_lim, col=c("yellow", "red", "blue", "green", "purple", "orange"),
   names.arg=names, beside=TRUE)

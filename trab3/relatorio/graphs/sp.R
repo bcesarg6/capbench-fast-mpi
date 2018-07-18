@@ -17,8 +17,8 @@ lines(exec, type="o", col="blue", pch=22, lty=2)
 lines(exec_env, type="o", col="red", pch=21, lty=2)
 
 
-title(xlab="N processos", col.lab=rgb(0,0.5,0))
+title(xlab="Número de fluxos", col.lab=rgb(0,0.5,0))
 title(ylab="Speedup", col.lab=rgb(0,0.5,0))
-title(main="Speedup", col.main="red")
+title(main="", col.main="red")
 legend(1, g_range[2], names, cex=0.8,
    col=cores, pch=21:22, lty=1:2);
